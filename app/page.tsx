@@ -1,21 +1,25 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import ModeToggle from '@/components/mode-toggle';
 
 export default function EvasiveButton() {
   const [showYes, setShowYes] = useState(false);
   const [showNo, setShowNo] = useState(false);
   const [noButtonPosition, setNoButtonPosition] = useState({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState(0);
   const noButtonRef = useRef<HTMLButtonElement>(null);
   const yesButtonRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleYesClick = () => {
     setShowYes(true);
+    setShowNo(false);
   };
 
   const handleNoClick = () => {
     setShowNo(true);
+    setShowYes(false);
   };
 
   const moveToRandomPosition = useCallback(
@@ -27,7 +31,8 @@ export default function EvasiveButton() {
     ) => {
       const PADDING = 10; // Padding for all edges
       const newX =
-        PADDING + Math.random() * (containerWidth - buttonWidth - 2 * PADDING);
+        PADDING +
+        Math.random() * (containerWidth - buttonWidth - 2 * PADDING - 30);
       const newY =
         PADDING +
         Math.random() * (containerHeight - buttonHeight - 2 * PADDING);
@@ -92,6 +97,10 @@ export default function EvasiveButton() {
   );
 
   useEffect(() => {
+    setRotation(Math.random() * 10 - 5);
+  }, []);
+
+  useEffect(() => {
     const container = containerRef.current;
     if (container) {
       container.addEventListener('mousemove', moveButton);
@@ -123,9 +132,15 @@ export default function EvasiveButton() {
   return (
     <div
       ref={containerRef}
-      className="relative min-h-screen flex flex-col items-center justify-center bg-gray-100 overflow-hidden p-4"
+      className="relative min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-[#100C08] overflow-hidden p-4"
     >
-      <h1 className="text-4xl font-bold mb-8 text-gray-900">Сосал?</h1>
+      <div className="absolute top-4 right-4">
+        <ModeToggle />
+      </div>
+
+      <h1 className="text-4xl font-bold mb-8 text-gray-900 dark:text-gray-100">
+        Сосал?
+      </h1>
       <div className="space-x-4 ml-[-80px]">
         <button
           ref={yesButtonRef}
@@ -141,7 +156,7 @@ export default function EvasiveButton() {
             left: `${noButtonPosition.x}px`,
             top: `${noButtonPosition.y}px`,
             transition: 'transform 0.3s ease, left 0.2s ease, top 0.2s ease',
-            transform: `rotate(${Math.random() * 10 - 5}deg) scale(1.1)`,
+            transform: `rotate(${rotation}deg) scale(1.1)`,
           }}
           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
           onClick={handleNoClick}
@@ -149,8 +164,14 @@ export default function EvasiveButton() {
           Нет
         </button>
       </div>
-      {showYes && <p className="mt-8 text-xl text-gray-700">А я знал</p>}
-      {showNo && <p className="mt-8 text-xl text-gray-700">Обоюнда...</p>}
+      <div className="mt-4 h-20 flex flex-col items-center justify-center">
+        {showYes && (
+          <p className="text-xl text-gray-700 dark:text-gray-300">А я знал</p>
+        )}
+        {showNo && (
+          <p className="text-xl text-gray-700 dark:text-gray-300">Обоюнда...</p>
+        )}
+      </div>
     </div>
   );
 }

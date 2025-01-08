@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Сосал?',
-  description: 'На коленке за полчаса',
+  title: 'Соц опрос',
+  description: 'Тест на быдло',
 };
 
 export default function RootLayout({

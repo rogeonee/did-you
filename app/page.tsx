@@ -1,101 +1,156 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useCallback, useRef, useEffect } from 'react';
+
+export default function EvasiveButton() {
+  const [showYes, setShowYes] = useState(false);
+  const [showNo, setShowNo] = useState(false);
+  const [noButtonPosition, setNoButtonPosition] = useState({ x: 0, y: 0 });
+  const noButtonRef = useRef<HTMLButtonElement>(null);
+  const yesButtonRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleYesClick = () => {
+    setShowYes(true);
+  };
+
+  const handleNoClick = () => {
+    setShowNo(true);
+  };
+
+  const moveToRandomPosition = useCallback(
+    (
+      containerWidth: number,
+      containerHeight: number,
+      buttonWidth: number,
+      buttonHeight: number,
+    ) => {
+      const PADDING = 10; // Padding for all edges
+      const newX =
+        PADDING + Math.random() * (containerWidth - buttonWidth - 2 * PADDING);
+      const newY =
+        PADDING +
+        Math.random() * (containerHeight - buttonHeight - 2 * PADDING);
+      return { x: newX, y: newY };
+    },
+    [],
+  );
+
+  const moveButton = useCallback(
+    (e: MouseEvent | TouchEvent) => {
+      const PADDING = 10;
+
+      if (noButtonRef.current && containerRef.current) {
+        const buttonRect = noButtonRef.current.getBoundingClientRect();
+        const containerRect = containerRef.current.getBoundingClientRect();
+
+        let mouseX, mouseY;
+        if (e instanceof MouseEvent) {
+          mouseX = e.clientX - containerRect.left;
+          mouseY = e.clientY - containerRect.top;
+        } else {
+          mouseX = e.touches[0].clientX - containerRect.left;
+          mouseY = e.touches[0].clientY - containerRect.top;
+        }
+
+        const buttonCenterX = noButtonPosition.x + buttonRect.width / 2;
+        const buttonCenterY = noButtonPosition.y + buttonRect.height / 2;
+
+        const distanceX = mouseX - buttonCenterX;
+        const distanceY = mouseY - buttonCenterY;
+
+        if (Math.abs(distanceX) < 50 && Math.abs(distanceY) < 50) {
+          const randomPosition = moveToRandomPosition(
+            containerRect.width,
+            containerRect.height,
+            buttonRect.width,
+            buttonRect.height,
+          );
+          setNoButtonPosition(randomPosition);
+        } else if (Math.abs(distanceX) < 100 && Math.abs(distanceY) < 100) {
+          let newX = noButtonPosition.x - distanceX / 1.5;
+          let newY = noButtonPosition.y - distanceY / 1.5;
+
+          // Ensure the button stays within the container
+          newX = Math.max(
+            PADDING,
+            Math.min(
+              newX,
+              containerRect.width - buttonRect.width - PADDING - 30,
+            ),
+          );
+          newY = Math.max(
+            PADDING,
+            Math.min(newY, containerRect.height - buttonRect.height - PADDING),
+          );
+
+          setNoButtonPosition({ x: newX, y: newY });
+        }
+      }
+    },
+    [noButtonPosition, moveToRandomPosition],
+  );
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('mousemove', moveButton);
+      container.addEventListener('touchstart', moveButton);
+      container.addEventListener('touchmove', moveButton);
+      return () => {
+        container.removeEventListener('mousemove', moveButton);
+        container.removeEventListener('touchstart', moveButton);
+        container.removeEventListener('touchmove', moveButton);
+      };
+    }
+  }, [moveButton]);
+
+  // initial position
+  useEffect(() => {
+    if (containerRef.current && yesButtonRef.current) {
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const yesButtonRect = yesButtonRef.current.getBoundingClientRect();
+
+      // Calculate initial position relative to the "Yes" button
+      const initialX =
+        yesButtonRect.left - containerRect.left + yesButtonRect.width + 4; // Add spacing
+      const initialY = yesButtonRect.top - containerRect.top;
+
+      setNoButtonPosition({ x: initialX, y: initialY });
+    }
+  }, []);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div
+      ref={containerRef}
+      className="relative min-h-screen flex flex-col items-center justify-center bg-gray-100 overflow-hidden p-4"
+    >
+      <h1 className="text-4xl font-bold mb-8 text-gray-900">Сосал?</h1>
+      <div className="space-x-4 ml-[-80px]">
+        <button
+          ref={yesButtonRef}
+          onClick={handleYesClick}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Да
+        </button>
+        <button
+          ref={noButtonRef}
+          style={{
+            position: 'absolute',
+            left: `${noButtonPosition.x}px`,
+            top: `${noButtonPosition.y}px`,
+            transition: 'transform 0.3s ease, left 0.2s ease, top 0.2s ease',
+            transform: `rotate(${Math.random() * 10 - 5}deg) scale(1.1)`,
+          }}
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          onClick={handleNoClick}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Нет
+        </button>
+      </div>
+      {showYes && <p className="mt-8 text-xl text-gray-700">А я знал</p>}
+      {showNo && <p className="mt-8 text-xl text-gray-700">Обоюнда...</p>}
     </div>
   );
 }

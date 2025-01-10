@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import ModeToggle from '@/components/mode-toggle';
+import { Button } from '@/components/ui/button';
 
 export default function EvasiveButton() {
   const [showYes, setShowYes] = useState(false);
@@ -142,14 +143,14 @@ export default function EvasiveButton() {
         Сосал?
       </h1>
       <div className="space-x-4 ml-[-80px]">
-        <button
+        <Button
           ref={yesButtonRef}
           onClick={handleYesClick}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+          className="bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
         >
           Да
-        </button>
-        <button
+        </Button>
+        <Button
           ref={noButtonRef}
           style={{
             position: 'absolute',
@@ -158,11 +159,11 @@ export default function EvasiveButton() {
             transition: 'transform 0.3s ease, left 0.2s ease, top 0.2s ease',
             transform: `rotate(${rotation}deg) scale(1.1)`,
           }}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          className="bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
           onClick={handleNoClick}
         >
           Нет
-        </button>
+        </Button>
       </div>
       <div className="mt-4 h-20 flex flex-col items-center justify-center">
         {showYes && (
